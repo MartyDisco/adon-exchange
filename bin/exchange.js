@@ -136,6 +136,8 @@ var Exchange = function () {
 						return _this5.updateCurrency(_extends({ currency: _extends({}, currency, { value: options.line.value }) }, options));
 					}
 					return _this5.createCurrency(_extends({ currency: options.line }, options));
+				}).then(function () {
+					return resolve();
 				}).catch(function (err) {
 					return reject(err);
 				});
@@ -188,8 +190,10 @@ var Exchange = function () {
 			var _this8 = this;
 
 			return new _bluebird2.default(function (resolve, reject) {
-				if (!options.currency) return _this8.Model.find({});
-				return _this8.Model.find(options.currency.from ? { from: options.currency.from } : { to: options.currency.to }).then(function (currencies) {
+				_bluebird2.default.try(function () {
+					if (!options.currency) return _this8.Model.find({});
+					return _this8.Model.find(options.currency.from ? { from: options.currency.from } : { to: options.currency.to });
+				}).then(function (currencies) {
 					return resolve(currencies);
 				}).catch(function (err) {
 					return reject(err);

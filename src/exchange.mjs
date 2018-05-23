@@ -67,6 +67,7 @@ class Exchange {
 				}
 				return this.createCurrency({ currency: options.line, ...options })
 			})
+			.then(() => resolve())
 			.catch(err => reject(err)))
 	}
 
@@ -101,10 +102,12 @@ class Exchange {
 
 	readCurrencies(options) {
 		return new Promise((resolve, reject) => {
-			if (!options.currency) return this.Model.find({})
-			return this.Model.find(options.currency.from
-				? { from: options.currency.from }
-				: { to: options.currency.to })
+			Promise.try(() => {
+				if (!options.currency) return this.Model.find({})
+				return this.Model.find(options.currency.from
+					? { from: options.currency.from }
+					: { to: options.currency.to })
+			})
 				.then(currencies => resolve(currencies))
 				.catch(err => reject(err))
 		})
