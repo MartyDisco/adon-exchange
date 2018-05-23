@@ -49,7 +49,6 @@ import mongoose from 'mongoose'
 
 const { Schema } = mongoose
   , currencySchema = new Schema({
-    __v: { type: Number, select: false }
     , date: { type: Date, default: Date.now }
     , modified: { type: Date, default: Date.now }
     , origin: { type: String, default: 'automatic' }
