@@ -1,6 +1,6 @@
 {
 	"name": "adon-exchange",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"license": "MIT",
 	"author": "Martin PARENT <mparent@adon-immo.com> (https://adon-immo.com)",
 	"description": "A simple currency manager from Objects - CSV - JSON - XML to mongoose model, promisified with bluebird",
