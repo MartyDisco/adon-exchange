@@ -30,6 +30,8 @@ var _xml2js2 = _interopRequireDefault(_xml2js);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var fsAsync = _bluebird2.default.promisifyAll(_fs2.default),
@@ -48,28 +50,22 @@ var Exchange = function () {
 			var _this = this;
 
 			return new _bluebird2.default(function (resolve, reject) {
-				switch (_path2.default.extname(options.file).toLowerCase()) {
-					case '.csv':
-						return _this._csvToCurrencies(options).then(function () {
-							return resolve();
-						}).catch(function (err) {
-							return reject(err);
-						});
-					case '.json':
-						return _this._jsonToCurrencies(options).then(function () {
-							return resolve();
-						}).catch(function (err) {
-							return reject(err);
-						});
-					case '.xml':
-						return _this._xmlToCurrencies(options).then(function () {
-							return resolve();
-						}).catch(function (err) {
-							return reject(err);
-						});
-					default:
-						return reject(new Error('File type not supported'));
-				}
+				_bluebird2.default.try(function () {
+					switch (_path2.default.extname(options.file).toLowerCase()) {
+						case '.csv':
+							return _this._csvToCurrencies(options);
+						case '.json':
+							return _this._jsonToCurrencies(options);
+						case '.xml':
+							return _this._xmlToCurrencies(options);
+						default:
+							return reject(new Error('File type not supported'));
+					}
+				}).then(function (currencies) {
+					return resolve(currencies);
+				}).catch(function (err) {
+					return reject(err);
+				});
 			});
 		}
 	}, {
@@ -77,13 +73,16 @@ var Exchange = function () {
 		value: function _csvToCurrencies(options) {
 			var _this2 = this;
 
+			var currencies = [];
 			return new _bluebird2.default(function (resolve, reject) {
 				(0, _csvtojson2.default)({ delimiter: options.delimiter || ';' }).fromFile('' + process.cwd() + options.file).then(function (json) {
-					return json.reduce(function (promises, line) {
-						return _this2._lineToCurrency(_extends({ line: line }, options));
+					return json.reduce(function (promise, line) {
+						return _this2._lineToCurrency(_extends({ line: line }, options)).then(function (results) {
+							currencies.push.apply(currencies, _toConsumableArray(results));
+						});
 					}, _bluebird2.default.resolve());
 				}).then(function () {
-					return resolve();
+					return resolve(currencies);
 				}).catch(function (err) {
 					return reject(err);
 				});
@@ -94,13 +93,16 @@ var Exchange = function () {
 		value: function _jsonToCurrencies(options) {
 			var _this3 = this;
 
+			var currencies = [];
 			return new _bluebird2.default(function (resolve, reject) {
 				fsAsync.readFileAsync('' + process.cwd() + options.file, 'utf8').then(function (data) {
-					return JSON.parse(data).reduce(function (promises, line) {
-						return _this3._lineToCurrency(_extends({ line: line }, options));
-					});
-				}, _bluebird2.default.resolve()).then(function () {
-					return resolve();
+					return JSON.parse(data).reduce(function (promise, line) {
+						return _this3._lineToCurrency(_extends({ line: line }, options)).then(function (results) {
+							currencies.push.apply(currencies, _toConsumableArray(results));
+						});
+					}, _bluebird2.default.resolve());
+				}).then(function () {
+					return resolve(currencies);
 				}).catch(function (err) {
 					return reject(err);
 				});
@@ -111,15 +113,18 @@ var Exchange = function () {
 		value: function _xmlToCurrencies(options) {
 			var _this4 = this;
 
+			var currencies = [];
 			return new _bluebird2.default(function (resolve, reject) {
 				fsAsync.readFileAsync('' + process.cwd() + options.file, 'utf8').then(function (data) {
 					return xmlAsync.parseStringAsync(data);
 				}).then(function (json) {
-					return json[options.root ? options.root : 'root.line'].reduce(function (promises, line) {
-						return _this4._lineToCurrency(_extends({ line: line }, options));
+					return json[options.root ? options.root : 'root.line'].reduce(function (promise, line) {
+						return _this4._lineToCurrency(_extends({ line: line }, options)).then(function (results) {
+							currencies.push.apply(currencies, _toConsumableArray(results));
+						});
 					}, _bluebird2.default.resolve());
 				}).then(function () {
-					return resolve();
+					return resolve(currencies);
 				}).catch(function (err) {
 					return reject(err);
 				});
@@ -136,8 +141,8 @@ var Exchange = function () {
 						return _this5.updateCurrency(_extends({ currency: _extends({}, currency, { value: options.line.value }) }, options));
 					}
 					return _this5.createCurrency(_extends({ currency: options.line }, options));
-				}).then(function () {
-					return resolve();
+				}).then(function (currencies) {
+					return resolve(currencies);
 				}).catch(function (err) {
 					return reject(err);
 				});
