@@ -14,47 +14,59 @@ class Exchange {
 
 	fileToCurrencies(options) {
 		return new Promise((resolve, reject) => {
-			switch (path.extname(options.file).toLowerCase()) {
-				case '.csv': return this._csvToCurrencies(options).then(() => resolve()).catch(err => reject(err))
-				case '.json': return this._jsonToCurrencies(options).then(() => resolve()).catch(err => reject(err))
-				case '.xml': return this._xmlToCurrencies(options).then(() => resolve()).catch(err => reject(err))
-				default: return reject(new Error('File type not supported'))
-			}
+			Promise.try(() => {
+				switch (path.extname(options.file).toLowerCase()) {
+					case '.csv': return this._csvToCurrencies(options)
+					case '.json': return this._jsonToCurrencies(options)
+					case '.xml': return this._xmlToCurrencies(options)
+					default: return reject(new Error('File type not supported'))
+				}
+			})
+				.then(currencies => resolve(currencies))
+				.catch(err => reject(err))
 		})
 	}
 
 	_csvToCurrencies(options) {
+		const currencies = []
 		return new Promise((resolve, reject) => {
 			csv({ delimiter: options.delimiter || ';' })
 				.fromFile(`${process.cwd()}${options.file}`)
 				.then(json => json.reduce(
-					(promises, line) => this._lineToCurrency({ line, ...options })
+					(promise, line) => this._lineToCurrency({ line, ...options })
+						.then((results) => { currencies.push(...results) })
 					, Promise.resolve()
 				))
-				.then(() => resolve())
+				.then(() => resolve(currencies))
 				.catch(err => reject(err))
 		})
 	}
 
 	_jsonToCurrencies(options) {
+		const currencies = []
 		return new Promise((resolve, reject) => {
 			fsAsync.readFileAsync(`${process.cwd()}${options.file}`, 'utf8')
-				.then(data => JSON.parse(data)
-					.reduce((promises, line) => this._lineToCurrency({ line, ...options })), Promise.resolve())
-				.then(() => resolve())
+				.then(data => JSON.parse(data).reduce(
+					(promise, line) => this._lineToCurrency({ line, ...options })
+						.then((results) => { currencies.push(...results) })
+					, Promise.resolve()
+				))
+				.then(() => resolve(currencies))
 				.catch(err => reject(err))
 		})
 	}
 
 	_xmlToCurrencies(options) {
+		const currencies = []
 		return new Promise((resolve, reject) => {
 			fsAsync.readFileAsync(`${process.cwd()}${options.file}`, 'utf8')
 				.then(data => xmlAsync.parseStringAsync(data))
 				.then(json => json[options.root ? options.root : 'root.line'].reduce(
-					(promises, line) => this._lineToCurrency({ line, ...options })
+					(promise, line) => this._lineToCurrency({ line, ...options })
+						.then((results) => { currencies.push(...results) })
 					, Promise.resolve()
 				))
-				.then(() => resolve())
+				.then(() => resolve(currencies))
 				.catch(err => reject(err))
 		})
 	}
@@ -67,7 +79,7 @@ class Exchange {
 				}
 				return this.createCurrency({ currency: options.line, ...options })
 			})
-			.then(() => resolve())
+			.then(currencies => resolve(currencies))
 			.catch(err => reject(err)))
 	}
 
