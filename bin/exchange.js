@@ -138,9 +138,9 @@ var Exchange = function () {
 			return new _bluebird2.default(function (resolve, reject) {
 				return _this5.readCurrency(_extends({}, options.line)).then(function (currency) {
 					if (currency) {
-						return _this5.updateCurrency(_extends({ currency: _extends({}, currency, { value: options.line.value }) }, options));
+						return _this5.updateCurrency(_extends({}, options, currency, { value: options.line.value }));
 					}
-					return _this5.createCurrency(_extends({ currency: options.line }, options));
+					return _this5.createCurrency(_extends({}, options, options.line));
 				}).then(function (currencies) {
 					return resolve(currencies);
 				}).catch(function (err) {
@@ -157,13 +157,13 @@ var Exchange = function () {
 				return new _this6.Model({
 					from: options.from.toUpperCase(),
 					to: options.to.toUpperCase(),
-					value: options.currency.value.toFixed(options.precision ? options.precision : 6),
+					value: options.value.toFixed(options.precision ? options.precision : 6),
 					origin: options.origin ? options.origin : 'manual'
 				}).save().then(function (currency) {
 					return _bluebird2.default.all([currency, new _this6.Model({
-						from: options.currency.to.toUpperCase(),
-						to: options.currency.from.toUpperCase(),
-						value: (1 / options.currency.value).toFixed(options.precision ? options.precision : 6),
+						from: options.to.toUpperCase(),
+						to: options.from.toUpperCase(),
+						value: (1 / options.value).toFixed(options.precision ? options.precision : 6),
 						origin: options.origin ? options.origin : 'manual'
 					}).save()]);
 				}).then(function (currencies) {
@@ -180,8 +180,8 @@ var Exchange = function () {
 
 			return new _bluebird2.default(function (resolve, reject) {
 				return _this7.Model.findOne({
-					from: options.currency.from.toUpperCase(),
-					to: options.currency.to.toUpperCase()
+					from: options.from.toUpperCase(),
+					to: options.to.toUpperCase()
 				}).then(function (currency) {
 					return resolve(currency);
 				}).catch(function (err) {
@@ -197,7 +197,7 @@ var Exchange = function () {
 			return new _bluebird2.default(function (resolve, reject) {
 				_bluebird2.default.try(function () {
 					if (!options.currency) return _this8.Model.find({});
-					return _this8.Model.find(options.currency.from ? { from: options.currency.from } : { to: options.currency.to });
+					return _this8.Model.find(options.from ? { from: options.from } : { to: options.to });
 				}).then(function (currencies) {
 					return resolve(currencies);
 				}).catch(function (err) {
@@ -211,15 +211,15 @@ var Exchange = function () {
 			var _this9 = this;
 
 			return new _bluebird2.default(function (resolve, reject) {
-				return _this9.Model.findOneAndUpdate({ from: options.currency.from, to: options.currency.to }, {
+				return _this9.Model.findOneAndUpdate({ from: options.from, to: options.to }, {
 					$set: {
-						value: options.currency.value.toFixed(options.precision ? options.precision : 6),
+						value: options.value.toFixed(options.precision ? options.precision : 6),
 						modified: Date.now()
 					}
 				}, { new: true }).then(function (currency) {
-					return _bluebird2.default.all([currency, _this9.Model.findOneAndUpdate({ from: options.currency.to, to: options.currency.from }, {
+					return _bluebird2.default.all([currency, _this9.Model.findOneAndUpdate({ from: options.to, to: options.from }, {
 						$set: {
-							value: (1 / options.currency.value).toFixed(options.precision ? options.precision : 6),
+							value: (1 / options.value).toFixed(options.precision ? options.precision : 6),
 							modified: Date.now()
 						}
 					}, { new: true })]);
@@ -237,10 +237,10 @@ var Exchange = function () {
 
 			return new _bluebird2.default(function (resolve, reject) {
 				return _this10.Model.findOneAndRemove({
-					from: options.currency.from,
-					to: options.currency.to
+					from: options.from,
+					to: options.to
 				}).then(function () {
-					return _this10.Model.findOneAndRemove({ from: options.currency.to, to: options.currency.from });
+					return _this10.Model.findOneAndRemove({ from: options.to, to: options.from });
 				}).then(function () {
 					return resolve();
 				}).catch(function (err) {
