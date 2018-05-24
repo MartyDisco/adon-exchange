@@ -157,7 +157,7 @@ var Exchange = function () {
 				return new _this6.Model({
 					from: options.from.toUpperCase(),
 					to: options.to.toUpperCase(),
-					value: options.value.toFixed(options.precision ? options.precision : 6),
+					value: (1 * options.value).toFixed(options.precision ? options.precision : 6),
 					origin: options.origin ? options.origin : 'manual'
 				}).save().then(function (currency) {
 					return _bluebird2.default.all([currency, new _this6.Model({
@@ -213,7 +213,7 @@ var Exchange = function () {
 			return new _bluebird2.default(function (resolve, reject) {
 				return _this9.Model.findOneAndUpdate({ from: options.from, to: options.to }, {
 					$set: {
-						value: options.value.toFixed(options.precision ? options.precision : 6),
+						value: (1 * options.value).toFixed(options.precision ? options.precision : 6),
 						modified: Date.now()
 					}
 				}, { new: true }).then(function (currency) {

@@ -87,7 +87,7 @@ class Exchange {
 		return new Promise((resolve, reject) => new this.Model({
 			from: options.from.toUpperCase()
 			, to: options.to.toUpperCase()
-			, value: options.value.toFixed(options.precision ? options.precision : 6)
+			, value: (1 * options.value).toFixed(options.precision ? options.precision : 6)
 			, origin: options.origin ? options.origin : 'manual'
 		}).save()
 			.then(currency => Promise.all([
@@ -130,7 +130,7 @@ class Exchange {
 			{ from: options.from, to: options.to }
 			, {
 				$set: {
-					value: options.value.toFixed(options.precision ? options.precision : 6)
+					value: (1 * options.value).toFixed(options.precision ? options.precision : 6)
 					, modified: Date.now()
 				}
 			}
