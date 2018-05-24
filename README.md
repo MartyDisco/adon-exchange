@@ -74,7 +74,7 @@ exchange.fileToCurrencies({
   , delimiter: // Opt. The CSV delimiter, default to ';'
   , root: // Opt. The XML root path to lines, default to 'root.line'
 })
-    .then(() => // Job done)
+    .then(currencies => // Do something with your currencies)
     .catch(err => // Treat errors)
 ```
 
