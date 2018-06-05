@@ -99,7 +99,7 @@ class Exchange {
 					, origin: options.origin ? options.origin : 'manual'
 				}).save()
 			]))
-			.then(currencies => resolve(currencies))
+			.then(([currency, reverse]) => resolve([currency.toObject(), reverse.toObject()]))
 			.catch(err => reject(err)))
 	}
 
